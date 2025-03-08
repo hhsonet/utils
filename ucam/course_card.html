@@ -1,17 +1,17 @@
 <div class="course-card">
   <div class="header">
-    <div class="department">BSCSE</div>
-    <div class="course-code">CSE 2215</div>
+    <div class="course-info">
+      <div class="department">BSCSE</div>
+      <div class="course-code">CSE 2215</div>
+    </div>
   </div>
   
   <h2 class="course-title">Data Structures and Algorithms <span class="section">Section D</span></h2>
   
   <div class="details">
-    
     <div class="schedule">
       <span class="time">Sat-Tue 8:30 AM - 11:00 AM</span>
       <span class="room">Room 523</span>
-      
     </div>
   </div>
 </div>
@@ -28,9 +28,13 @@
 
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 1rem;
+}
+
+.course-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .department {
@@ -46,6 +50,15 @@
   color: #616161;
   font-weight: 500;
   font-size: 1rem;
+  position: relative;
+  padding-left: 12px;
+}
+
+.course-code::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #bdbdbd;
 }
 
 .course-title {
@@ -75,10 +88,6 @@
   gap: 8px;
   color: #616161;
   font-size: 0.9rem;
-}
-
-.icon {
-  font-size: 1.1rem;
 }
 
 .time {

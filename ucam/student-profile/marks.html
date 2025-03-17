@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Student Dashboard</title>
+  <style>
+    :root {
+      --primary-color: #3a6ea5;
+      --secondary-color: #ff7043;
+      --accent-color: #4caf50;
+      --warning-color: #f57c00;
+      --danger-color: #e53935;
+      --background-color: #f5f7fa;
+      --card-bg: #ffffff;
+      --text-primary: #333333;
+      --text-secondary: #6b6b6b;
+      --border-color: #e0e0e0;
+      --chart-bg: #f9f9f9;
+      --absent-color: #ff5252;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, sans-serif;
+    }
+    
+    body {
+      background-color: var(--background-color);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+    .stat-card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .dashboard {
+      max-width: 1200px;
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .sidebar {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      position: sticky;
+      top: 20px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+    
+    .student-profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 20px;
+    }
+    
+    .student-avatar {
+      width: 100px;
+      height: 100px;
+      background-color: var(--primary-color);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 40px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+    
+    .student-name {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+    
+    .student-id {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    
+    .semester-badge {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .course-list {
+      list-style: none;
+    }
+    
+    .course-item {
+      padding: 12px 15px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    
+    .course-item:hover {
+      background-color: rgba(58, 110, 165, 0.1);
+    }
+    
+    .course-item.active {
+      background-color: rgba(58, 110, 165, 0.2);
+      font-weight: 500;
+    }
+    
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .course-header {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .course-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .course-code {
+      color: var(--text-secondary);
+      font-size: 16px;
+    }
+    
+    .course-actions button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .tabs {
+      display: flex;
+      background-color: var(--card-bg);
+      border-radius: 10px 10px 0 0;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .tab {
+      padding: 15px 25px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      border-bottom: 3px solid transparent;
+    }
+    
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+      background-color: rgba(58, 110, 165, 0.05);
+    }
+    
+    .tab-content {
+      background-color: var(--card-bg);
+      border-radius: 0 0 10px 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 25px;
+    }
+    
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .summary-card {
+      background-color: var(--chart-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-title {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 15px;
+    }
+    
+    .card-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+    
+    .card-value.warning {
+      color: var(--warning-color);
+    }
+    
+    .card-value.danger {
+      color: var(--danger-color);
+    }
+    
+    .card-value.success {
+      color: var(--accent-color);
+    }
+    
+    .card-footer {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .progress-container {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+    }
+    
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .progress-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .progress-score {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+    
+    .progress-bar {
+      height: 12px;
+      background-color: #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+      border-radius: 6px;
+    }
+    
+    .grade-prediction {
+      text-align: right;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .assessments-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .assessments-table th {
+      background-color: var(--chart-bg);
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    .assessments-table td {
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .assessments-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .assessments-table .absent {
+      color: var(--absent-color);
+      font-weight: 500;
+    }
+    
+    .assessments-table .highlight {
+      background-color: rgba(58, 110, 165, 0.05);
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+    }
+    
+    .status-completed {
+      background-color: rgba(76, 175, 80, 0.15);
+      color: var(--accent-color);
+    }
+    
+    .status-upcoming {
+      background-color: rgba(245, 124, 0, 0.15);
+      color: var(--warning-color);
+    }
+    
+    .status-absent {
+      background-color: rgba(229, 57, 53, 0.15);
+      color: var(--danger-color);
+    }
+    
+    .chart-container {
+      height: 300px;
+      margin: 20px 0;
+    }
+    
+    .attendance-chart {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+      gap: 8px;
+      margin: 20px 0;
+    }
+    
+    .attendance-day {
+      height: 40px;
+      border-radius: 4px;
+      background-color: var(--chart-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    
+    .present {
+      background-color: rgba(76, 175, 80, 0.2);
+      border: 1px solid rgba(76, 175, 80, 0.5);
+    }
+    
+    .absent {
+      background-color: rgba(229, 57, 53, 0.2);
+      border: 1px solid rgba(229, 57, 53, 0.5);
+    }
+    
+    .smart-insights {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-top: 20px;
+    }
+    
+    .insights-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .insights-title svg {
+      color: var(--primary-color);
+    }
+    
+    .insight-card {
+      background-color: var(--chart-bg);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .insight-card.warning {
+      border-left-color: var(--warning-color);
+    }
+    
+    .insight-card.success {
+      border-left-color: var(--accent-color);
+    }
+    
+    @media (max-width: 1024px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+      
+      .student-profile {
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+      }
+      
+      .student-avatar {
+        margin-bottom: 0;
+      }
+    }
+    .profile-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-color: #ddd;
+      margin-right: 20px;
+      overflow: hidden;
+    }
+    
+    .profile-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .semester-select {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    padding-right: 36px;
+  }
+  
+  .semester-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+  }
+  
+  .semester-select option {
+    background-color: white;
+    color: var(--text-primary);
+  }
+    
+    @media (max-width: 768px) {
+      .summary-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .student-profile {
+        flex-direction: column;
+      }
+      
+      .assessments-table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="student-profile">
+        <div class="profile-image">
+                    <img src="https://avatars.githubusercontent.com/u/15366846?v=4" alt="Dr. Sarah Connor">
+                  </div>
+        <div>
+          <h2 class="student-name">Hamudi Hasan Sonet</h2>
+          <div class="student-id">ID: 0122230050</div>
+          <div class="semester-badge">
+              <div class="course-actions">
+              <select class="semester-select">
+                <option value="spring2025">Spring 2025</option>
+                <option value="fall2024">Fall 2024</option>
+                <option value="spring2024">Spring 2024</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <ul class="course-list">
+        <li class="course-item active">CSE 2215 - Data Structures and Algorithms</li>
+        <li class="course-item">CSE 3107 - Database Systems</li>
+        <li class="course-item">CSE 3412 - Computer Networks</li>
+        <li class="course-item">CSE 2118 - Advanced Programming</li>
+        <li class="course-item">MATH 2201 - Linear Algebra</li>
+      </ul>
+    </aside>
+    
+    <main class="main-content">
+      <div class="course-header">
+        <div>
+          <h1 class="course-title">Data Structures and Algorithms</h1>
+          <div class="course-code">CSE 2215 (A)</div>
+        </div>
+        <div class="course-actions">
+          <button>Spring 2025</button>
+        </div>
+      </div>
+      
+      <div class="tabs">
+        <button class="tab " onclick="window.location.href='https://swtest.uiu.ac.bd/apple'">Overview</button>
+        <button class="tab" onclick="window.location.href='https://swtest.uiu.ac.bd/apple/attendance.html'">Attendance</button>
+        <button class="tab active" onclick="window.location.href='https://swtest.uiu.ac.bd/apple/marks.html'">Marks</button>
+      </div>
+      
+      <div class="tab-content">
+        <div class="summary-cards">
+          <div class="summary-card">
+            <div class="card-title">Class Test</div>
+            <div class="card-value success">18/20</div>
+            <div class="card-footer">Average of Best <b>3</b></div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="card-title">Assignment</div>
+            <div class="card-value">15/20</div>
+            <div class="card-footer"></div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="card-title">Midterm</div>
+            <div class="card-value">25/30</div>
+            <div class="card-footer">Best of regular and improvement</div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="card-title">Final</div>
+            <div class="card-value warning">0/30</div>
+            <div class="card-footer">Best of regular and improvement</div>
+          </div>
+          
+          <div class="summary-card">
+            <div class="card-title">Performance Rank</div>
+            <div class="card-value">15/20</div>
+            <div class="card-footer">Top 20% of the class</div>
+          </div>
+          
+        </div>
+        
+        
+        <div class="progress-container">
+          <div class="progress-header">
+            <div class="progress-title">Overall Progress</div>
+            <div class="progress-score">58/100</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 58%"></div>
+          </div>
+          <div class="grade-prediction">Total published marks: <strong>60</strong></div>
+        </div>
+        
+        <table class="assessments-table">
+          <thead>
+            <tr>
+              <th>Assessment</th>
+              <th>Assessment Date</th>
+              
+              <th>Your Score</th>
+              <th>Max Score</th>
+              <th>Class Avg</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Quiz 1</td>
+              <td>Feb 15, 2025</td>
+              <td>18</td>
+              <td>20</td>
+              <td>15.2</td>
+              <td><span class="status-badge status-completed">Completed</span></td>
+            </tr>
+            <tr>
+              <td>Quiz 2</td>
+              <td>Mar 01, 2025</td>
+              <td>Abs</td>
+              <td>20</td>
+              <td>14.7</td>
+              <td><span class="status-badge status-absent">Absent</span></td>
+            </tr>
+            <tr>
+              <td>Midterm Exam</td>
+              <td>Mar 10, 2025</td>
+              <td>30</td>
+              <td>25</td>
+              <td>22.5</td>
+              <td><span class="status-badge status-completed">Completed</span></td>
+            </tr>
+            
+          </tbody>
+        </table>
+        
+        
+      </div>
+    </main>
+  </div>
+</body>
+</html>
